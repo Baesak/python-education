@@ -1,1 +1,1 @@
-Hello world
+Salut, le Monde!
