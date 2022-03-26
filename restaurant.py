@@ -17,7 +17,6 @@ class Person:
         for _ in range(repeat):
             print(action)
             sleep(1)
-        print(action)
 
 
 class OrderCheckMixin:
@@ -61,6 +60,7 @@ class Customer(Person):
         If this a delivery order - 'price'
 
         Algorithm of processing orders:
+        
         1.Order created by Customer
         2.Order taken by the Waiter
         3.Waiter gives Order to Chef
@@ -69,11 +69,13 @@ class Customer(Person):
         6.Waiter gives CookedOrder to Customer
 
         Algorithm of processing delivery orders:
+
         1.Order created by Customer
-        2.Costumer gives Order to Chef
-        3.Chef creating CookedOrder
-        4.Chef gives CookedOrder to Courier
-        5.Courier gives CookedOrder to Customer"""
+        2.Order taken by the Courier
+        3.Courier gives Order to Chef
+        4.Chef creating CookedOrder
+        5.Chef gives CookedOrder to Courier
+        6.Courier gives CookedOrder to Customer"""
 
         price = None
 
@@ -175,7 +177,7 @@ class Chef(Person):
     """Creating CookedOrders and can give it to Waiter or Courier.
     Can add and remove food from menu, and change available food.
     _cooked_order_list is storing CookedOrders for Waiter.
-    _cooked_delivery_order_list is storing orders for Courier."""
+    _cooked_delivery_order is store order for Courier."""
 
     _orders_list = []
     _cooked_order_list = []
@@ -218,7 +220,7 @@ class Chef(Person):
         return self._cooked_order_list.pop()
 
     def give_delivery_order_to_courier(self):
-        """Gives orders for Courier."""
+        """Gives order for Courier."""
         return self._cooked_delivery_order
 
     def add_to_menu(self, menu, food_type, name, price, alcohol=False):
@@ -259,14 +261,15 @@ class Chef(Person):
 
 
 class Courier(Person, OrderCheckMixin):
-    """Takes CookedOrder from Chef and gives it to Customer. Works only with delivery orders"""
+    """Takes Order from a Customer and give it to a Chef, then give CookedOrder
+    from Chef to Costumer. Works only with delivery orders."""
 
     _delivery_order = None
     _order_on_hands = None
 
     def take_delivery_order(self, delivery_order):
-        """Takes CookedOrder from Chef and appends it on _orders_list.
-        Sets 'price' attribute in Order."""
+        """Takes order from Customer and puts it on _delivery_order. Sets 'price'
+        attribute in Order."""
 
         if self._order_validation(delivery_order, self):
             delivery_order.price = sum(delivery_order.dishes_list + delivery_order.drinks_list)
