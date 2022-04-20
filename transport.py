@@ -1,27 +1,34 @@
+
 """With this module you can create different types of transport."""
 
-
-from abc import ABC, abstractmethod
 from re import match
 from descriptors import NonNegative, BoolOnly, StringOnly
 
 
 class Engine:
-    """Creates engine for Transport. Engine may break, and can be repaired with own repair
+    """Creates engine for transport. Engine may break, and can be repaired by own repair
     method."""
 
     def __init__(self):
         self.engine_condition = BoolOnly()
         self.engine_condition = True
 
-    def start_engine(self):
+    def move(self):
+        """Makes vehicle move!"""
+
+        if self._start_engine():
+            print(f"{self} is moving forward!")
+
+    def _start_engine(self):
         """Starts engine if it is in good condition"""
 
         print("Starting the engine...")
         if self.engine_condition:
             print("Engine is working.")
+            return True
         else:
             print("Engine doesn't starts!")
+            return False
 
     def break_engine(self):
         """Breaks engine"""
@@ -36,8 +43,8 @@ class Engine:
         print("Engine has been repaired.")
 
 
-class Transport(Engine, ABC):
-    """Abstract class for different transport types."""
+class Transport:
+    """Class for different transport types."""
 
     def __init__(self, model, price, year, velocity):
 
@@ -52,11 +59,16 @@ class Transport(Engine, ABC):
         self.year = year
         self.velocity = velocity
 
-    @abstractmethod
-    def move(self):
-        """Makes transport move."""
+    @staticmethod
+    def beep():
+        """Make transport beep"""
 
-        ...
+        print(f"Transport Beeps")
+
+    @staticmethod
+    def move():
+        """Makes transport move."""
+        print(f"Transport is moving forward!")
 
     def __int__(self):
         return self.price
@@ -83,36 +95,14 @@ class Transport(Engine, ABC):
     __rsub__ = __sub__
 
 
-class GroundTransport(Transport, ABC):
-    """Can create some different ground vehicles. Saves each new vehicle by number
-    in '_taken_numbers'."""
+class Numbers:
+    """Allows you to add numbers attribute to your vehicle"""
 
     _taken_numbers = {}
 
-    class Wheel:
-        """Creates wheels for ground vehicles."""
-
-        def __init__(self):
-            self.tire = BoolOnly()
-            self.tire = True
-
-        def change_tire(self):
-            """Changing tire if it in bad condition."""
-
-            self.tire = True
-            print("Tire changed")
-
-        def break_tire(self):
-            """Breaks tire"""
-
-            self.tire = False
-            print("Tire broken")
-
-    def __init__(self, model, price, year, velocity, number):
-        super().__init__(model, price, year, velocity)
-        self._number = ""
+    def __init__(self, number):
+        self._number = ''
         self.number = number
-        self._taken_numbers[number] = self
 
     @property
     def number(self):
@@ -135,7 +125,6 @@ class GroundTransport(Transport, ABC):
         if value in self._taken_numbers.keys():
             raise ValueError(f"{value} is already taken!")
 
-        self._taken_numbers[value] = self._taken_numbers.pop(self._number)
         self._number = value
 
     @number.deleter
@@ -154,15 +143,14 @@ class GroundTransport(Transport, ABC):
 
         cls._taken_numbers.pop(key)
 
-    def move(self):
-        """Make vehicle move"""
 
-        print(f"{self} is riding forward!")
+class Car(Engine, Transport, Numbers):
+    """Creates car."""
 
-    def beep(self):
-        """Make vehicle beep"""
-
-        print(f"{self} Beeps")
+    def __init__(self, model, price, year, velocity, number):
+        super().__init__()
+        Transport.__init__(self, model, price, year, velocity)
+        Numbers.__init__(self, number)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -174,9 +162,37 @@ class GroundTransport(Transport, ABC):
         return self.model
 
 
-class WaterTransport(Transport, ABC):
-    """Can create some different water transport. Saves each new transport by name
-    in '_taken_names'."""
+class Motorcycle(Transport, Engine, Numbers):
+    """Creates motorcycle. Have 2 wheels"""
+
+    def __init__(self, model, price, year, velocity, number):
+        super().__init__(model, price, year, velocity)
+        Engine.__init__(self)
+        Numbers.__init__(self, number)
+
+    def move(self):
+        if self.engine_condition:
+            print(f"{self} motorcycle is starting its loud engine and fastly moving forward!")
+        else:
+            print("Something wrong with engine.")
+
+    def do_olly(self):
+        print(f"{self} has done olly!"
+              f"Looks like the engine has overheated...")
+        self.break_engine()
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.number == other.number
+        raise TypeError(f"TypeError: unsupported operand type(s) for ==: "
+                        f"'{self.__class__}' and '{type(other)}'")
+
+    def __str__(self):
+        return self.model
+
+
+class Ship(Transport, Engine):
+    """Creates ship"""
 
     _taken_names = {}
 
@@ -223,78 +239,83 @@ class WaterTransport(Transport, ABC):
 
     @classmethod
     def remove_from_taken_names(cls, key):
-        """Remove water transport from list of taken names"""
+        """Remove ship from list of taken names"""
 
         cls._taken_names.pop(key)
 
     def move(self):
-        print("The ship is sailing forward!")
+        """Makes ship move"""
 
-    @staticmethod
-    def lower_the_anchor():
-        """Makes water transport low the anchor"""
+        if self.engine_condition:
+            print(f"'{self.name}' ship is sailing forward!")
+        else:
+            print("Something wrong with engine.")
 
-        print("The ship dropped anchor!")
+    def lower_the_anchor(self):
+        """Makes ship low the anchor"""
 
-    @staticmethod
-    def hum_in_horn():
-        """Makes water transport hum in horn"""
+        print(f"The {self} ship dropped anchor!")
 
-        print("The ship hums in horn!")
+    def beep(self):
+        """Makes ship hum in horn"""
+
+        print(f"The {self} ship hums in horn!")
 
     def __str__(self):
         return self.name
 
-
-class Car(GroundTransport):
-    """Creates car. Have 4 wheels."""
-
-    def __init__(self, model, price, year, velocity, number):
-        super().__init__(model, price, year, velocity, number)
-
-        self.wheels = [self.Wheel() for _ in range(4)]
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.name == other.name
+        raise TypeError(f"TypeError: unsupported operand type(s) for ==: "
+                        f"'{self.__class__}' and '{type(other)}'")
 
 
-class Motorcycle(GroundTransport):
-    """Creates motorcycle. Have 2 wheels"""
+class Helicopter(Transport, Engine, Numbers):
+    """Makes Helicopter"""
 
     def __init__(self, model, price, year, velocity, number):
-        super().__init__(model, price, year, velocity, number)
+        super().__init__(model, price, year, velocity)
+        Engine.__init__(self)
+        Numbers.__init__(self, number)
 
-        self.wheels = [self.Wheel() for _ in range(2)]
+        self.in_air = BoolOnly()
+        self.condition = BoolOnly()
 
+    def move(self):
+        """Makes helicopter move and rise in the air"""
 
-class PassengerShip(WaterTransport):
-    """Creates Passenger ship. The passenger ship must carry at least 12 passengers"""
+        if self.condition:
+            print(f"{self} helicopter is flying forward!")
+            self.in_air = True
+        else:
+            print("Your helicopter is broken!")
 
-    def __init__(self, model, price, year, velocity, name, load_limit, passengers):
-        super().__init__(model, price, year, velocity, name, load_limit)
+    def sit_down(self):
+        """Makes helicopter land"""
 
-        self._passengers = None
-        self.passengers = passengers
+        if self.in_air:
+            print("Helicopter has landed.")
+            self.in_air = False
+        else:
+            print("Helicopter is landed already")
 
-    @property
-    def passengers(self):
-        """Returns 'passengers' attribute"""
+    def break_engine(self):
+        """Breaks engine"""
 
-        return self._passengers
+        self.engine_condition = False
+        print("Engine is broken!")
 
-    @passengers.setter
-    def passengers(self, value):
-        """Sets 'passengers' attribute. Should be only integer, and at least 12."""
+        if self.in_air:
+            self.condition = False
+            print("Helicopter fall down and crushed! It is useless now.")
 
-        if not isinstance(value, int):
-            raise TypeError(f"'passengers' cannot be {type(value)}")
-        if value < 12:
-            raise ValueError("The number of passengers on a passenger"
-                             " ship must be at least 12.")
-        self._passengers = value
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.number == other.number
+        raise TypeError(f"TypeError: unsupported operand type(s) for ==: "
+                        f"'{self.__class__}' and '{type(other)}'")
 
-    @passengers.deleter
-    def passengers(self):
-        del self._passengers
+    def __str__(self):
+        return self.model
 
-
-my_car = Car("Toyota", 10000, 2018, 320, "AC2345BB")
-my_moto = Motorcycle("Suzuki", 234, 2000, 400, "AX2345BB")
-my_ship = PassengerShip("Ship", 50000, 1999, 100, "Titanic", 1600, 200)
