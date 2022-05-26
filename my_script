@@ -1,0 +1,13 @@
+#! /usr/bin/env bash
+
+if [[ $1 = "help" ]]
+then
+echo -e "This script outputs sorted list of files in current directory and curret date and time.\nYou could set params for 'sort' function as for the regular 'sort' function."
+else
+echo -e "Sorted list of files in current dir:"
+echo -e "\033[0m\n\033[0m\033[31m$(ls | sort $1)\033[0m"
+
+echo -e "\nCurrent time and date:"
+echo -e "\033[0m\n\033[0m\033[31m$(date)"
+fi
+
